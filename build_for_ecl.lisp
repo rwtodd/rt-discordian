@@ -4,18 +4,10 @@
 (require 'asdf)
 (require 'cmp)
 
-(defvar *files* (list "packages" "discordian" "ddate"))
-
-(mapc #'(lambda (fl)
-	  (compile-file (concatenate 'string fl ".lisp")
-			:system-p t))
-      *files*)
-
-(c:build-program "ddate"
-		 :lisp-files
-		 (mapcar #'(lambda (fl) (concatenate 'string fl ".obj"))
-			 *files*)
-		 :epilogue-code
-		 '(progn (rt-ddate:main)(si:exit)))
-
+(asdf:load-system "rt-discordian")  ;; seems necessary, even though it shouldn't be
+(asdf:make-build "rt-discordian"
+                 :type :program
+                 :move-here #P"./"
+                 :epilogue-code
+                 '(progn (rt-ddate:main)(si:exit)))
 (si:exit)
