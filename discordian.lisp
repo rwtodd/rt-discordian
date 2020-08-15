@@ -1,11 +1,5 @@
 (in-package "RT-DISCORDIAN")
 
-(defmacro divisible-p (y n) `(zerop (mod ,y ,n)))
-(defun leap-year-p (y)
-  "is Y a leap year?"
-  (and (divisible-p y 4)
-       (or (not (divisible-p y 100)) (divisible-p y 400))))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +exclamations+
     #("Hail Eris!" "All Hail Discordia!" "Kallisti!" "Fnord." "Or not."
@@ -17,9 +11,6 @@
     #("Mungday" "Mojoday" "Syaday" "Zaraday" "Maladay"))
   (defconstant +holy-50+
     #("Chaoflux" "Discoflux" "Confuflux" "Bureflux" "Afflux"))
-  (defconstant +dayz+
-    (coerce (loop :for x :in '(0 31 28 31 30 31 30 31 31 30 31 30)
-		  :summing x :into y :collecting y) 'vector))
   (defconstant +day-names+
     #("St. Tib's Day" "Tibs"   "Sweetmorn" "SM"  "Boomtime" "BT"
       "Pungenday" "PD"         "Prickle-Prickle" "PP"
@@ -27,12 +18,6 @@
   (defconstant +season-names+
     #("Chaos" "Chs"   "Discord" "Dsc"   "Confusion" "Cfn" 
       "Bureaucracy" "Bcy"    "The Aftermath" "Afm")))
-
-(defun day-of-year (y m d)
-  "Give the 0-based day-of-the-year (0-364; 365 on leap-years)"
-  (+ (svref +dayz+ (1- m))
-     (1- d)
-     (if (and (> m 2) (leap-year-p y)) 1 0)))
 
 (defstruct (discdate (:conc-name dd-))
   year yday day weekday season tibs)
@@ -42,8 +27,8 @@
   ;; if the year is negative (B.C.), increase it by 1 to account for no
   ;; year 0
   (when (< y 0) (incf y))
-  (let* ((raw-yday (day-of-year y m d))
-	 (ly (leap-year-p y))
+  (let* ((raw-yday (rt-dates:ymd-2-yday y m d))
+	 (ly (rt-dates:leap-year-p y))
 	 (adjusted-yday (- raw-yday
 			   (if (and ly (> raw-yday 59)) 1 0)))
 	 (tibs (and ly (eql raw-yday 59))))
@@ -108,20 +93,9 @@ which is Jul 5, 8661."
 	(psetq year_e year_s  year_s year_e
 	       day_e day_s    day_s  day_e))
 
-      ;; when year_s is negative, we need to make it positive...
-      (when (< year_s 0)
-	(let ((addend (* -400 (floor year_s 400))))
-	  (incf year_s addend)
-	  (incf year_e addend)))
-
       ;; calculate the days to X-Day now...
-      (*
-       (if flip -1 1)
-       (+ (* 365 (- year_e year_s))
-	  (- day_e day_s)
-	  (- (ceiling year_e 4)   (ceiling year_s 4))
-	  (- (ceiling year_s 100) (ceiling year_e 100))
-	  (- (ceiling year_e 400) (ceiling year_s 400)))))))
+      (* (if flip -1 1)
+	 (rt-dates:days-between `(,year_s ,day_s) `(,year_e ,day_e))))))
 
 (defun format-day (fmt dd)
   "Format the discordian date according to `fmt`.

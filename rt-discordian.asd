@@ -3,10 +3,10 @@
   :version "1.0"
   :author "Richard Todd <richard.wesley.todd@gmail.com>"
   :licence "MIT"
+  :depends-on ("rt-dates")
   :build-operation "program-op" ;; leave as is
   :build-pathname "ddate"
   :entry-point "rt-ddate:main"
-  ;;  :depends-on ("optima.ppcre" "command-line-arguments")
   :serial t
   :components ((:file "packages")
                (:file "discordian")
