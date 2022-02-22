@@ -134,3 +134,15 @@ fmt can optionally start with a +, which I remove, to honor UNIX tradition."
 				   flen))))))
 	    ;; not a %.. just copy it to the output
 	    (vector-push-extend ch str))))))
+
+;; customize the way lisp formats this
+(defmethod print-object ((o discdate) stream)
+  (print-unreadable-object (o stream :type t)
+    (format stream "~A" (format-day "%Y-%b-%d" o))))
+
+(defmethod describe-object ((o discdate) stream)
+  (format stream
+	  "~&~A is a discordian date.~%It is ~A~%~A~%"
+	  o
+	  (format-day "%A, the %e day of %B, in the YOLD %Y." o)
+	  (format-day "There are %X days until X-Day." o)))
